@@ -6,14 +6,10 @@ import { ScrollView } from 'react-native-gesture-handler';
 import DataFormModal from '../PopUp';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { HabitData, User } from '../DataInterfaces';
+import HabitDisplay from '../HabitDisplay';
 
-const allData = ['Wall', 'Glass', 'Food']
-const dats = {'Wall': ['Item1', 'Item2'], 'Glass' : ['Item3', 'Item4'], 'Food' : ['Item5']}
-
-export default function TestScreen() { 
+export default function HabitsScreen() { 
     const [showPopup, setPopup] = useState(false);
-
-    
 
     const [user, setUser] = useState<User>({
         habits:[],
@@ -33,8 +29,14 @@ export default function TestScreen() {
             <DataFormModal 
             visible={showPopup}
             onClose={() => setPopup(false)}
-            onSubmit={(data) => {
-                
+            onSubmit={(name, frequency, startDay, category) => {
+                addHabit({
+                  name:name,
+                  frequency:frequency,
+                  startDay:startDay,
+                  completedDays:[],
+                  category:category
+                })
             }}
             />
             <Button
@@ -42,11 +44,11 @@ export default function TestScreen() {
                 onPress={() =>setPopup(true)}
 
             />
-            <Text style = {styles.titleContainer}>List</Text>
+            <Text style = {styles.titleContainer}>Habits</Text>
             <ScrollView style = {styles.listContainer}>
-                {Object.values(dats).map((item,index) => (
+                {user.habits.map((item,index) => (
                     <View key={index} >
-                        <Text style = {styles.titleContainer}>{item}</Text>
+                        <HabitDisplay habit={item}/>
                     </View>
                 ))
                 }

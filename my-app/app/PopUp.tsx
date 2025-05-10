@@ -2,22 +2,34 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Button, Modal, StyleSheet } from 'react-native';
 import DropdownExample from './Dropdown';
 import { Frequency } from './DataInterfaces';
+import DatePicker from 'react-native-date-picker';
 
 interface DataFormProps {
   visible: boolean;
   onClose: () => void;
-  onSubmit: (data: string) => void;
+  onSubmit: (name: string, frequency: Frequency, startDay:Date, category:string) => void;
 }
 
 export default function DataFormModal({ visible, onClose, onSubmit }: DataFormProps) {
   const [input, setInput] = useState('');
-  const frequencies = {'Hourly': Frequency.Hourly, 'Weekly': Frequency.Weekly};
+  const frequencies:{[key: string]:Frequency} = {"Hourly": Frequency.Hourly, "Weekly": Frequency.Weekly};
   const [selFreq, setFreq] = useState('Weekly');
 
+  const [date, setDate] = useState(new Date());
+
+  const categories:{[key: string]:string} = {'Health': "Health", 'Career': "Career"};
+  const [selCat, setCat] = useState('Health');
+
   const handleSubmit = () => {
-    onSubmit(input);
+    onSubmit(input, frequencies[selFreq], date, categories[selCat]);
     setInput('');
     onClose();
+  };
+
+  const onDateChange = (event: any, selectedDate?: Date) => {
+    if (selectedDate) {
+      setDate(selectedDate);
+    }
   };
 
   return (
@@ -37,6 +49,23 @@ export default function DataFormModal({ visible, onClose, onSubmit }: DataFormPr
             selected={selFreq}
             onChanged={(value, key) => {
               setFreq(key);
+            }}
+          />
+          <DropdownExample
+            title={'Category'}
+            items={categories}
+            selected={selCat}
+            onChanged={(value, key) => {
+              setCat(key);
+            }}
+          />
+          <DatePicker
+            modal
+            open={true}
+            date={date}
+            mode="date"
+            onConfirm={(selectedDate) => {
+              setDate(selectedDate)
             }}
           />
           <View style={styles.buttonRow}>

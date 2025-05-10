@@ -1,8 +1,8 @@
 export enum Frequency {
-    Hourly,
-    Daily,
-    Weekly,
-    Monthly,
+    Hourly = "Hourly",
+    Daily = "Daily",
+    Weekly = "Weekly",
+    Monthly = "Monthly",
 }
 
 export interface HabitData {
@@ -10,7 +10,6 @@ export interface HabitData {
     frequency: Frequency;
     startDay:Date;
     completedDays:Date[];
-    missedDays:Date[];
     category:string;
 }
 
