@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, Modal, StyleSheet } from 'react-native';
 import DropdownExample from './Dropdown';
-import { Frequency } from './DataInterfaces';
+import { Frequency, HabitData } from './DataInterfaces';
 import DatePicker from 'react-native-date-picker';
 
 interface DataFormProps {
   visible: boolean;
   onClose: () => void;
-  onSubmit: (name: string, frequency: Frequency, startDay:Date, category:string) => void;
+  onSubmit: (habit:HabitData) => void;
 }
 
 export default function DataFormModal({ visible, onClose, onSubmit }: DataFormProps) {
@@ -21,7 +21,7 @@ export default function DataFormModal({ visible, onClose, onSubmit }: DataFormPr
   const [selCat, setCat] = useState('Health');
 
   const handleSubmit = () => {
-    onSubmit(input, frequencies[selFreq], date, categories[selCat]);
+    onSubmit({name:input, frequency:frequencies[selFreq], startDay:date, completedDays:[], category: categories[selCat]});
     setInput('');
     onClose();
   };

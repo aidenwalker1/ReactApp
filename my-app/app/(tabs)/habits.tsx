@@ -23,20 +23,28 @@ export default function HabitsScreen() {
         }));
     };
 
+    const removeHabit = (habit:HabitData) => {
+        setUser(prev => ({
+            ...prev,
+            habits: prev.habits.filter((item) => item != habit)
+        }));
+    };
+
+    const editHabit = (newHabit:HabitData, old:HabitData) => {
+        setUser(prev => ({
+            ...prev,
+            habits: prev.habits.map((val) => val == old ? newHabit : val)
+        }));
+    }
+
     return (
         
         <View>
             <DataFormModal 
             visible={showPopup}
             onClose={() => setPopup(false)}
-            onSubmit={(name, frequency, startDay, category) => {
-                addHabit({
-                  name:name,
-                  frequency:frequency,
-                  startDay:startDay,
-                  completedDays:[],
-                  category:category
-                })
+            onSubmit={(habit) => {
+                addHabit(habit)
             }}
             />
             <Button
@@ -48,7 +56,7 @@ export default function HabitsScreen() {
             <ScrollView style = {styles.listContainer}>
                 {user.habits.map((item,index) => (
                     <View key={index} >
-                        <HabitDisplay habit={item}/>
+                        <HabitDisplay habit={item} onClose={removeHabit} onSubmit={editHabit}/>
                     </View>
                 ))
                 }
