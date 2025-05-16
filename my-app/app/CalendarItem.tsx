@@ -1,28 +1,62 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pressable, Text, StyleSheet } from "react-native";
 
-export default function CalendarItem({item, mouseHeld} : {item:Date, mouseHeld:boolean}) {
-    const [value, setValue] = useState(new Date());
-    const [highLight, setHighlight] = useState(false)
-    const [isOver, setIsOver] = useState(false);
+interface CalendarItemProps {
+  item:Date
+  mouseHeld:boolean
+  selected:boolean
+  onSelect: (date:Date) => void
+}
+
+export default function CalendarItem({item, mouseHeld, selected, onSelect} : CalendarItemProps) {
+    const boxRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+      const handleMouseMove = (e: MouseEvent) => {
+        
+        if (!boxRef.current) return;
+        const rect = boxRef.current.getBoundingClientRect();
+        const isInside =
+          e.clientX >= rect.left &&
+          e.clientX <= rect.right &&
+          e.clientY >= rect.top &&
+          e.clientY <= rect.bottom;
+        if (isInside && mouseHeld) {
+          onSelect(item)
+        }
+      };
+
+      const handleMouseDown = (e: MouseEvent) => {
+        
+        if (!boxRef.current) return;
+        const rect = boxRef.current.getBoundingClientRect();
+        const isInside =
+          e.clientX >= rect.left &&
+          e.clientX <= rect.right &&
+          e.clientY >= rect.top &&
+          e.clientY <= rect.bottom;
+        if (isInside && mouseHeld) {
+          onSelect(item)
+        }
+      };
+
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mousedown', handleMouseDown);
+
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mousedown', handleMouseDown);
+      };
+    }, [mouseHeld]);
 
     return (
-        <div
-            onMouseLeave={() => {}}
-            onMouseDown={() => {setHighlight(true)}}
-            onMouseEnter = {() => {
-                console.log("??")
-                if (mouseHeld) {
-                    setHighlight(true)
-                }
-            }}
-        >
+        <div ref={boxRef}>
 
             <Pressable
             onPressIn={() => {}}
             onPressOut={() => {}}
             >
-            <Text style = {highLight ? styles.listContainer : styles.list2Container}>{item.toDateString()}</Text>
+            <Text style = {selected ? styles.listContainer : styles.list2Container}>{item.toDateString()}</Text>
             </Pressable>
         </div>
     )
