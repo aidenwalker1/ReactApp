@@ -1,40 +1,39 @@
 import { Image } from 'expo-image';
 import { Platform, StyleSheet, View, Text, Button } from 'react-native';
 
-import {useState} from 'react'
+import {useEffect, useState} from 'react'
 import { ScrollView } from 'react-native-gesture-handler';
 import DataFormModal from '../PopUp';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { HabitData, User } from '../DataInterfaces';
 import HabitDisplay from '../HabitDisplay';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, saveUser } from '../store';
 
 export default function HabitsScreen() { 
     const [showPopup, setPopup] = useState(false);
 
-    const [user, setUser] = useState<User>({
-        habits:[],
-        username:"Name",
-    });
+    const user = useSelector((state: RootState) => state.user.latest);
+    const [habits, setHabits] = useState<HabitData[]>(user.habits)
+
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+          if (user) {
+            setHabits(user.habits)
+          }
+    }, [user]);
     
     const addHabit = (habit:HabitData) => {
-        setUser(prev => ({
-            ...prev,
-            habits: [...prev.habits, habit]
-        }));
+        dispatch(saveUser({...user, habits:[...habits, habit]}))
     };
 
     const removeHabit = (habit:HabitData) => {
-        setUser(prev => ({
-            ...prev,
-            habits: prev.habits.filter((item) => item != habit)
-        }));
+        dispatch(saveUser({...user, habits:habits.filter((item) => item != habit)}))
     };
 
     const editHabit = (newHabit:HabitData, old:HabitData) => {
-        setUser(prev => ({
-            ...prev,
-            habits: prev.habits.map((val) => val == old ? newHabit : val)
-        }));
+        dispatch(saveUser({...user, habits:habits.map((val) => val == old ? newHabit : val)}))
     }
 
     return (

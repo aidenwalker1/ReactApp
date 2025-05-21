@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Pressable, Text, StyleSheet, View } from "react-native";
 import { DietData, HabitData, MealData } from "./DataInterfaces";
 
-function HabitDisplaySimple({habit} : {habit:HabitData}) {
+export default function HabitDisplaySimple({habit} : {habit:HabitData}) {
     return (
         <View>
             <Text>
@@ -25,40 +25,10 @@ function HabitDisplaySimple({habit} : {habit:HabitData}) {
         </View>
     );
 }
-
-function MealDisplaySimple({meal} : {meal:MealData}) {
-    return (
-        <View>
-            <Text>
-                {meal.name}
-            </Text>
-            <Text>
-                {''+meal.mealCalories}
-            </Text>
-            <Text>
-                {''+meal.mealDays}
-            </Text>
-            <Text>
-                {''+meal.mealTime}
-            </Text>
-        </View>
-    );
-}
-
 interface CalendarDayProps {
     habit: HabitData
     meal:MealData
 }
-
-export default function CalendarDay({habit, meal} : CalendarDayProps) {
-    return (
-       <View>
-            <HabitDisplaySimple habit={habit} />
-            <MealDisplaySimple meal={meal} />
-       </View>
-    )
-}
-
 
 const styles = StyleSheet.create({
   headerImage: {

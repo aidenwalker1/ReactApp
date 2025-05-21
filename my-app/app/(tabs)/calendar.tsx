@@ -1,11 +1,16 @@
 import { View, Text, StyleSheet } from "react-native";
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import { FlatList, Pressable } from "react-native-gesture-handler";
 import CalendarItem from "../CalendarItem";
-import { Frequency, HabitData, User } from "../DataInterfaces";
+import { DietData, Frequency, HabitData, MealData, User } from "../DataInterfaces";
 import CalendarDay from "../CalendarDay";
+import HabitDisplaySimple from "../SimpleHabitDisplay";
+import MealDisplaySimple from "../DietDisplaySimple";
+import { useSelector } from 'react-redux';
+import { RootState, saveUser } from '../store';
+import { useDispatch } from 'react-redux';
 
 type CalendarItem = {
   date:Date
@@ -19,10 +24,16 @@ export default function CalendarDisplay() {
       return Array.from({length:30}, (_, index) => ({date:new Date(year, month, index+1),selected:false}))
     }
 
-    const [user, setUser] = useState<User>({
-            habits:[{name:'input', frequency:Frequency.Weekly, startDay:new Date(), completedDays:[], category: 'Health'}],
-            username:"Name",
-    });
+    const user = useSelector((state: RootState) => state.user.latest);
+    const [diets, setDiets] = useState<DietData[]>(user.diets)
+    const [habits, setHabits] = useState<HabitData[]>(user.habits)
+
+    useEffect(() => {
+          if (user) {
+            setDiets(user.diets)
+            setHabits(user.habits)
+          }
+    }, [user]);
 
     const [value, setValue] = useState(new Date());
     const [lastDate, setLastDate] = useState<Date | null>(null)
@@ -57,7 +68,13 @@ export default function CalendarDisplay() {
 
     const selectedRenderItem = ({item}:{item:HabitData}) => {
       return (
-       <CalendarDay habit={item}/>
+       <HabitDisplaySimple habit={item}/>
+      )
+    }
+
+    const selectedRenderMeal = ({item}:{item:MealData}) => {
+      return (
+        <MealDisplaySimple meal={item} />
       )
     }
 
@@ -65,6 +82,23 @@ export default function CalendarDisplay() {
 
     const inCalendarSelectedRange = (date:Date) => {
       return calendar.some((val) => val.selected && (val.date.toDateString() === date.toDateString()))
+    }
+
+    const mealInCalendarRange = (meal:MealData) => {
+      const dayOfWeek = (day:string) => {
+        switch(day) {
+          case "Monday" :
+            return 0
+          case "Tuesday" :
+            return 1
+          default:
+            return -1
+        }
+      }
+
+      const days:number[] = meal.mealDays.map(dayOfWeek)
+
+      return calendar.some((val) => val.selected && days.includes(val.date.getDay()))
     }
 
     return (
@@ -96,10 +130,15 @@ export default function CalendarDisplay() {
           />
           </div>
           {<FlatList
-            data={user.habits.filter((val) => inCalendarSelectedRange(val.startDay))}
+            data={habits.filter((val) => inCalendarSelectedRange(val.startDay))}
             renderItem={selectedRenderItem}
             keyExtractor={item => item.name}
-            numColumns={7}
+          />}
+
+          {<FlatList
+            data={diets.flatMap((diet) => diet.meals).filter(mealInCalendarRange) }
+            renderItem={selectedRenderMeal}
+            keyExtractor={item => item.name}
           />}
           
         </View>

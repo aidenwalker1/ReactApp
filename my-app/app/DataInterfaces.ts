@@ -15,5 +15,26 @@ export interface HabitData {
 
 export interface User {
     habits:HabitData[];
+    diets:DietData[]
     username:string;
+}
+
+export type FoodData = {
+    name:string
+    calories:number
+}
+
+export type MealData = {
+    name: string
+    food: FoodData[]
+    mealCalories:number
+    mealDays:string[]
+    mealTime:string
+}
+
+export type DietData = {
+    name:string
+    meals: MealData[]
+    duration:number
+    totalCalories:number
 }
