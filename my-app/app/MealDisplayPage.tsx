@@ -21,19 +21,26 @@ export default function MealDisplayScreen({meal, updateMeals, removeMeal} : Meal
     const [dateInput, setDateInput] = useState<string[]>([])
 
     const addFood = (food:FoodData) => {
-        updateMeals(meal, {...meal, food:[...meal.food, food]})
+        const updatedFoods = [...meal.food, food]
+        updateMeals(meal, {...meal, food:updatedFoods, mealCalories:calculateCalories(updatedFoods)})
     }
 
     const setMealName = (name:string) => {
         updateMeals(meal, {...meal, name:name})
     }
 
+    const calculateCalories = (foods:FoodData[]) => {
+        return foods.reduce((p, c) => p+c.calories,0)
+    }
+
     const updateFood = (food:FoodData, newFood:FoodData) => {
-        updateMeals(meal, {...meal, food:meal.food.map((f) => f != food ? f : newFood), mealCalories:meal.mealCalories+newFood.calories-food.calories})
+        const updatedFoods = meal.food.map((f) => f != food ? f : newFood)
+        updateMeals(meal, {...meal, food:updatedFoods, mealCalories:calculateCalories(updatedFoods)})
     }
 
     const removeFood = (food:FoodData) => {
-        updateMeals(meal, {...meal, food:meal.food.filter((f) => f != food), mealCalories:meal.mealCalories-food.calories})
+        const updatedFoods = meal.food.filter((f) => f != food)
+        updateMeals(meal, {...meal, food:updatedFoods, mealCalories:calculateCalories(updatedFoods)})
     }
 
     const days:{[key: string]:string} =  {'Monday':'Monday', 'Tuesday':'Tuesday'}
@@ -71,11 +78,11 @@ export default function MealDisplayScreen({meal, updateMeals, removeMeal} : Meal
 
             { meal.food.map((item) => (
             <View>
-                <AddFoodDisplay food={item} onEnded={(name, calories) => {
-                    const food = {name:name, calories:Number(calories)}
-                    updateFood(item, food)
+                <AddFoodDisplay key={item.name+item.category} food={item} onEnded={(f) => {
+                    updateFood(item, f)
                 }}
                 removed={(food) => removeFood(food)}
+                namedAlready={(food) => meal.food.some((f) => f.name === food)}
                 />
             </View>
             ))
@@ -83,7 +90,7 @@ export default function MealDisplayScreen({meal, updateMeals, removeMeal} : Meal
             
             <Button 
                 onPress={() => {
-                    addFood({name:'food'+meal.food.length,calories:0})
+                    addFood({name:'Food'+meal.food.length,calories:300, calsPer100:150,grams:200,category:'None'})
 
                 }}
                 title='Add Food'

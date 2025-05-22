@@ -2,21 +2,32 @@ import { useEffect, useRef, useState } from "react";
 import { Pressable, Text, StyleSheet, View } from "react-native";
 import { DietData, HabitData, MealData } from "./DataInterfaces";
 
-export default function MealDisplaySimple({meal} : {meal:MealData}) {
+export interface SimpleMealDisplayProps {
+    meals:MealData[]
+    date:Date
+}
+
+
+export default function MealDisplaySimple({meals, date} : SimpleMealDisplayProps) {
     return (
         <View>
-            <Text>
-                {meal.name}
-            </Text>
-            <Text>
-                {''+meal.mealCalories}
-            </Text>
-            <Text>
-                {''+meal.mealDays}
-            </Text>
-            <Text>
-                {''+meal.mealTime}
-            </Text>
+          {meals.map((meal) => (
+            <View>
+              <Text>
+              {meal.name}
+              </Text>
+              <Text>
+                  {''+meal.mealCalories}
+              </Text>
+              <Text>
+                  {''+meal.mealDays}
+              </Text>
+              <Text>
+                  {''+meal.mealTime}
+              </Text>
+            </View>
+          ))}
+           
         </View>
     );
 }

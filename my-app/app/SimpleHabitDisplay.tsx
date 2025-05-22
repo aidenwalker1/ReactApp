@@ -1,27 +1,38 @@
 import { useEffect, useRef, useState } from "react";
-import { Pressable, Text, StyleSheet, View } from "react-native";
+import { Pressable, Text, StyleSheet, View, Button } from "react-native";
 import { DietData, HabitData, MealData } from "./DataInterfaces";
 
-export default function HabitDisplaySimple({habit} : {habit:HabitData}) {
+interface CalendarDietDisplayProps {
+  habits:HabitData[]
+  date:Date
+  onComplete : (old:HabitData, habit:HabitData) => void
+}
+
+export default function HabitDisplaySimple({habits, date, onComplete} : CalendarDietDisplayProps) {
     return (
         <View>
-            <Text>
-                {habit.name}
-            </Text>
-            <Text>
-                {habit.category}
-            </Text>
-            <Text>
-                {habit.frequency}
-            </Text>
-            <Text>
-                {habit.startDay.toDateString()}
-            </Text>
-            <Text>
-                {habit.completedDays.length == 0 ? "Empty" : habit.completedDays.map((date) => date.toDateString()).reduce((prev, cur) => prev + ", " + cur)}
-            </Text>
-
-
+          {
+            habits.map((habit) => (
+              <View>
+                <Button 
+                  onPress={() => onComplete(habit, {...habit, completedDays: habit.completedDays.includes(date) ? habit.completedDays.filter((h) => h != date) : [...habit.completedDays, date]})}
+                  title={habit.completedDays.includes(date) ? 'Completed' : 'Incomplete'}
+                />
+                <Text>
+                    {habit.name}
+                </Text>
+                <Text>
+                    {habit.category}
+                </Text>
+                <Text>
+                    {habit.frequency}
+                </Text>
+                <Text>
+                    {habit.startDay.toDateString()}
+                </Text>
+              </View>
+            ))
+          }
         </View>
     );
 }

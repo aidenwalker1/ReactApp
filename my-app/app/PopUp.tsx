@@ -12,7 +12,7 @@ interface DataFormProps {
 
 export default function DataFormModal({ visible, onClose, onSubmit }: DataFormProps) {
   const [input, setInput] = useState('');
-  const frequencies:{[key: string]:Frequency} = {"Hourly": Frequency.Hourly, "Weekly": Frequency.Weekly};
+  const frequencies:{[key: string]:Frequency} = {"Hourly": Frequency.Hourly, "Weekly": Frequency.Weekly, "Daily":Frequency.Daily, "Monthly":Frequency.Monthly};
   const [selFreq, setFreq] = useState('Weekly');
 
   const [date, setDate] = useState(new Date());

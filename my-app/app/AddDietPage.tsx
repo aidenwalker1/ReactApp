@@ -31,7 +31,7 @@ export default function AddDietScreen({meals, onChange} : {meals:MealData[], onC
            />
            {
             meals.map((meal) =>(
-              <MealDisplayScreen meal={meal} updateMeals={updateMeals} removeMeal={removeMeal}/>
+              <MealDisplayScreen key={meal.name} meal={meal} updateMeals={updateMeals} removeMeal={removeMeal}/>
             ))
            }
            

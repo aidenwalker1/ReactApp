@@ -1,9 +1,10 @@
 // store.ts
 import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { User } from './DataInterfaces';
+import { FoodCSVData, User } from './DataInterfaces';
 import {v4 as uuidv4} from 'uuid';
+import Papa from 'papaparse';
 
-const user:User = {habits:[],diets:[],username:''+uuidv4()}
+const user:User = {habits:[],diets:[],username:''+uuidv4(), selectedDiet:''}
 
 const userSlice = createSlice({
   name: 'user',
@@ -15,11 +16,26 @@ const userSlice = createSlice({
   },
 });
 
+
+const foodData:FoodCSVData[] = []
+
+const foodDataSlice = createSlice({
+  name: 'foodData',
+  initialState: { latest: foodData },
+  reducers: {
+    saveFoodData: (state, action: PayloadAction<FoodCSVData[]>) => {
+      state.latest = action.payload;
+    },
+  },
+});
+
 export const { saveUser } = userSlice.actions;
+export const {saveFoodData} = foodDataSlice.actions
 
 export const store = configureStore({
   reducer: {
     user: userSlice.reducer,
+    foodData: foodDataSlice.reducer,
   },
 });
 
