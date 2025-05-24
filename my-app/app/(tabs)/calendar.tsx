@@ -4,7 +4,7 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import { FlatList, Pressable, ScrollView } from "react-native-gesture-handler";
 import CalendarItem from "../CalendarItem";
-import { DietData, Frequency, HabitData, MealData, User } from "../DataInterfaces";
+import { DietData, Frequency, HabitData, MealData, User, weekDays } from "../DataInterfaces";
 import CalendarDay from "../CalendarDay";
 import HabitDisplaySimple from "../SimpleHabitDisplay";
 import MealDisplaySimple, { SimpleMealDisplayProps } from "../DietDisplaySimple";
@@ -35,19 +35,17 @@ export default function CalendarDisplay() {
     }
 
     const user = useSelector((state: RootState) => state.user.latest);
-    const [diets, setDiets] = useState<DietData[]>(user.diets)
     const [habits, setHabits] = useState<HabitData[]>(user.habits)
+    const [selectedDiet, setSelectedDiet] = useState<DietData | null>(user.selectedDiet)
     const dispatch = useDispatch();
 
     useEffect(() => {
           if (user) {
-            setDiets(user.diets)
             setHabits(user.habits)
+            setSelectedDiet(user.selectedDiet)
           }
     }, [user]);
 
-    const [value, setValue] = useState(new Date());
-    const [lastDate, setLastDate] = useState<Date | null>(null)
     const startDateSelection = useRef<Date | null>(null)
     const [calendar, setCalendar] = useState(makeCalendar(new Date()))
     const [dateSelected, setDateSelected] = useState(false)
@@ -55,7 +53,6 @@ export default function CalendarDisplay() {
     const updateSelections = (date:Date) => {
       if (startDateSelection.current === null) {
         startDateSelection.current = date
-        setLastDate(date)
         return
       }
       let s = startDateSelection.current
@@ -80,7 +77,7 @@ export default function CalendarDisplay() {
     const selectedRenderItem = ({item}:{item:CalendarDietDisplayProps}) => {
       return (
        <HabitDisplaySimple habits={item.habits} date={item.date} onComplete={(old, habit) => {
-          dispatch(saveUser({...user, habits:habits.map((h) => h != old ? h : habit)}))
+          dispatch(saveUser({...user, habits:habits.map((h) => h.id != old.id ? h : habit)}))
        }}/>
       )
     }
@@ -93,81 +90,36 @@ export default function CalendarDisplay() {
 
     const [isOver, setIsOver] = useState(false);
 
-    const habitInCalendarRange = (habit:HabitData, date:Date) => {
-      const freq = habit.frequency
-      if (freq === Frequency.Hourly || freq === Frequency.Daily) {
-        return true
-      }
-      else if (freq === Frequency.Weekly) {
-        return date.getDay() === habit.startDay.getDay()
-      } 
-      else if (freq === Frequency.Monthly) {
-        return date.getUTCDate() === habit.startDay.getUTCDay()
-      }
-
-      return false
-    }
-
     const getHabitDays = (habits:HabitData[], selected:CalendarItem[]) => {
-      return selected.map((item) => ({habits:habits.filter((h) => habitInCalendarRange(h, item.date)), date:item.date}))
+      return selected.map((item) => ({habits:habits.filter((h) => h.habitDays.some(d => d.getDay()=== item.date.getDay())), date:item.date}))
     }
 
     const getMealDays = (meals:MealData[], selected:CalendarItem[]):SimpleMealDisplayProps[] => {
-      return selected.map((item) => ({meals:meals.filter((meal) => meal.mealDays.some((m) => dayOfWeek(m) == item.date.getDay())), date:item.date}))
-    }
-
-    const dayOfWeek = (day:string) => {
-        switch(day) {
-          case "Sunday" :
-            return 0
-          case "Monday" :
-            return 1
-          case "Tuesday" :
-            return 2
-          default:
-            return -1
-        }
+      return selected.map((item) => ({meals:meals.filter((meal) => meal.mealDays.some(d => d.getDay() == item.date.getDay())), date:item.date}))
     }
 
     const detectHabitStreaks = () => {
       return habits.map((habit) => {
-        if (habit.completedDays.length == 0) {
-          return {habit:habit, streak:0}
-        }
-        let reverseDays = habit.completedDays.toSorted((a,b) => b.getTime() - a.getTime())
-        console.log(reverseDays.map((d)=>d.getUTCDate())+'')
-
-        const getGap = () => {
-          switch(habit.frequency) {
-            case Frequency.Daily :
-              return 1
-            case Frequency.Hourly :
-              return 1
-            case Frequency.Weekly :
-              return 7
-            case Frequency.Monthly :
-              return 0
-            default:
-              return -1
-          }
-        }
-
-        const gap = getGap()
         let streak = 0
-        let today = new Date().getUTCDate()
-        let first = reverseDays.at(0)!
-        if (today - first.getUTCDate() >= gap) {
-          return {habit:habit, streak:streak} 
-        }
-        streak += 1
-        
-        for(let i = 1; i < reverseDays.length; i++) {
-          if (first.getUTCDate() - reverseDays.at(i)!.getUTCDate() > gap) {
-            return {habit:habit, streak:streak} 
+        let today = new Date().getDate()
+        let weekDay = new Date().getDay()
+        console.log('today:' + today)
+
+        for (let i = today; i >0; i--) {
+          if (!habit.habitDays.some(d => d.getDay() === weekDay)) {
+            weekDay = (weekDay - 1) % 7
+            continue
           }
+          weekDay = (weekDay - 1) % 7
+
+          if (!habit.completedDays.some(d => d.getDate() === i)) {
+            console.log('what' + i)
+            break
+          }
+
           streak += 1
-          first = reverseDays.at(i)!
         }
+
         return {habit:habit, streak:streak}
       })
     }
@@ -220,7 +172,7 @@ export default function CalendarDisplay() {
             />
 
             <FlatList
-              data={getMealDays(diets.some((d) => d.name === user.selectedDiet) ? diets.find((d) => d.name === user.selectedDiet)!.meals : [], calendar.filter((c) => c.selected))}
+              data={getMealDays(selectedDiet ? selectedDiet.meals : [], calendar.filter((c) => c.selected))}
               renderItem={selectedRenderMeal}
               keyExtractor={item => item.date.toDateString()}
               scrollEnabled={true}

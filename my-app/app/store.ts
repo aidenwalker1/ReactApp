@@ -4,7 +4,7 @@ import { FoodCSVData, User } from './DataInterfaces';
 import {v4 as uuidv4} from 'uuid';
 import Papa from 'papaparse';
 
-const user:User = {habits:[],diets:[],username:''+uuidv4(), selectedDiet:''}
+const user:User = {id:uuidv4(), habits:[],diets:[],username:''+uuidv4(), selectedDiet:null}
 
 const userSlice = createSlice({
   name: 'user',

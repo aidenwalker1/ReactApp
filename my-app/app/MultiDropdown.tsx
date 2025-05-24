@@ -71,7 +71,6 @@ export default function MultiDropdown<T>({title, items, selected, onChanged} : D
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 100,
     alignItems: 'center',
   },
   button: {

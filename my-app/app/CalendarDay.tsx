@@ -12,9 +12,6 @@ function HabitDisplaySimple({habit} : {habit:HabitData}) {
                 {habit.category}
             </Text>
             <Text>
-                {habit.frequency}
-            </Text>
-            <Text>
                 {habit.startDay.toDateString()}
             </Text>
             <Text>

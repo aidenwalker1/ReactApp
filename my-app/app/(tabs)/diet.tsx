@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { Platform, StyleSheet, View, Text, Button } from 'react-native';
+import { Platform, StyleSheet, View, Text, Button, Dimensions, TouchableOpacity } from 'react-native';
 
 import {useEffect, useState} from 'react'
 import { ScrollView } from 'react-native-gesture-handler';
@@ -17,16 +17,21 @@ import { readFile } from 'react-native-fs'; // may require setup
 import Papa from "papaparse";
 import {Asset} from 'expo-asset'
 import * as FileSystem from 'expo-file-system';
-
+import {v4 as uuidv4} from 'uuid';
 //FoodCategory,FoodItem,per100grams,Cals_per100grams,KJ_per100grams
 
-
+const screenHeight = Dimensions.get('window').height;
+const screenWidth = Dimensions.get('window').width
 
 export default function DietScreen() { 
     const user = useSelector((state: RootState) => state.user.latest);
     const dispatch = useDispatch();
+    const [loaded, setLoaded] = useState(false)
 
     const loadCSV = async () => {
+      if (loaded) {
+        return
+      }
       const asset = Asset.fromModule(require('../../assets/csv/calories.csv'));
       await asset.downloadAsync();
       const response = await fetch(asset.uri);
@@ -41,17 +46,21 @@ export default function DietScreen() {
             item: row.item ?? '',
             calories: row.calories ?? '',
       }));
-
+      setLoaded(true)
       dispatch(saveFoodData(data))
     };
 
-    const [foodData, setFoodData] = useState<FoodCSVData[]>([]);
-    const [diets, setDiets] = useState<DietData[]>([])
+    const [diets, setDiets] = useState<DietData[]>(user.diets)
+    const [selected, setSelected] = useState(user.selectedDiet)
     
-
     useEffect(() => {
       if (user) {
+        console.log('also here')
         setDiets(user.diets)
+        setSelected(user.selectedDiet)
+        if (user.diets.length > 0) {
+          console.log(user.diets[0].meals.length)
+        }
       }
 
       loadCSV()
@@ -62,44 +71,52 @@ export default function DietScreen() {
       dispatch(saveUser({...user, diets:[...diets, diet]}))
     }
 
-    const editMeal = (diet:DietData, newData:MealData[]) => {
-      dispatch(saveUser({...user, diets:diets.map((d) => d != diet ? d : {...diet, meals:newData})}))
+    const removeDiet = (diet:DietData) => {
+      dispatch(saveUser({...user, diets:diets.filter(d => d.id != diet.id)}))
     }
 
-    const setSelectedDiet = (name:string) => {
-      dispatch(saveUser({...user, selectedDiet:name}))
+    const editDiet = (newData:DietData) => {
+      console.log('here')
+      console.log(newData.meals.length)
+      dispatch(saveUser({...user, diets:diets.map(d => d.id != newData.id ? d : newData)}))
+    }
+
+    const setSelectedDiet = (diet:DietData|null) => {
+      dispatch(saveUser({...user, selectedDiet:diet}))
     }
 
     return (
-        <ScrollView>
-           <Button 
-                onPress={() => {
-                  addDiet({name:'diet'+diets.length, meals:[],duration:0, totalCalories:0})
-                }}
-                title='Add Diet'
-           />
-           <Text>Diets</Text>
+      <View style={{flex:1, alignItems:'center',gap:20, backgroundColor:'#303030',minHeight:screenHeight}}>
+        <Text style = {[styles.titleContainer, {alignSelf:'flex-start', paddingHorizontal:20}]}>Diets</Text>
+
+        <View style={styles.habitsBackground}>
+          <Text style = {styles.subTitle}>Your Diets</Text>
+          <ScrollView contentContainerStyle={{flexGrow:1,gap:20}}>
+          
             {diets.map((diet) => (
                 <View>
-                  <AddDietScreen meals={diet.meals} onChange={(meals) =>editMeal(diet, meals)}/>
-                  <Text>{diet.name}</Text>
-                  <Button 
-                    onPress={() => user.selectedDiet == diet.name ? setSelectedDiet('') : setSelectedDiet(diet.name)}
-                    title={user.selectedDiet == diet.name ? 'Selected' : 'Click to Select'}
-                  />
-                  <Button 
-                      onPress={() => setDiets(diets.filter((d) => d !== diet))}
-                      title='Remove Diet'
-                  />
-                  <Button 
-                      onPress={() => {}}
-                      title='Edit Diet'
-                  />
+                  <AddDietScreen isSelected={selected?.id === diet.id} diet={diet} onChange={editDiet} onClose={removeDiet} setSelected={(d) => setSelectedDiet(d)}/>
                 </View>
                 ))
             }
            
         </ScrollView>
+         <TouchableOpacity
+          style={styles.button}
+          onPress={() => {
+              addDiet({
+                id:uuidv4(), name: 'diet' + diets.length, meals: [], duration: 0, totalCalories: 0,
+                completedDays: []
+              })}
+            }
+          >
+            <Text style={styles.button}>Add Diet</Text>
+        </TouchableOpacity>
+        </View>
+
+        
+      </View>
+        
   );
 }
 
@@ -116,8 +133,58 @@ const styles = StyleSheet.create({
     padding: 16,
     maxHeight: 300,
   },
+  button: {
+    backgroundColor: '#e00b0b',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3, // Android shadow
+  },
+  habitsBackground: {
+    backgroundColor: '#ffffff',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3, // Android shadow
+    minHeight: screenHeight / 2,
+    minWidth: screenHeight / 1.5,
+    maxHeight: (3 *screenHeight) / 4,
+  },
+
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
   titleContainer: {
     flexDirection: 'row',
     gap: 8,
+    fontSize: 58,
+    color: '#ffffff', // or white if on dark background
+    borderColor:'#00000',
+    textShadowColor:'black',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+    textAlign: 'center',
+    fontFamily:'Roboto'
+  },
+  subTitle: {
+    flexDirection: 'row',
+    gap: 8,
+    fontSize: 30,
+    fontWeight: 'bold',
+    color: '#222', // or white if on dark background
+    textAlign: 'center',
+    fontFamily:'Roboto'
   },
 });

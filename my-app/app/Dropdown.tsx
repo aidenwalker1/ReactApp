@@ -20,7 +20,6 @@ export default function DropdownExample<T>({title, items, selected, onChanged} :
 
   return (
     <View style={styles.container}>
-        <Text style={styles.buttonText}>{title}:{selected}</Text>
         <TouchableOpacity
             style={styles.button}
             onPress={() => setShowDropdown(!showDropdown)}
@@ -48,8 +47,10 @@ export default function DropdownExample<T>({title, items, selected, onChanged} :
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 100,
     alignItems: 'center',
+    alignContent:'center',
+    justifyContent:'center',
+    position:'relative'
   },
   button: {
     padding: 12,
@@ -66,6 +67,10 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 8,
     width: 150,
+    position:'absolute',
+    top:'100%',
+    zIndex:1000,
+    elevation:100
   },
   dropdownItem: {
     padding: 12,

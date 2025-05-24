@@ -9,15 +9,25 @@ interface CalendarDietDisplayProps {
 }
 
 export default function HabitDisplaySimple({habits, date, onComplete} : CalendarDietDisplayProps) {
-    return (
+  const today = new Date()  
+  return (
         <View>
           {
             habits.map((habit) => (
               <View>
-                <Button 
-                  onPress={() => onComplete(habit, {...habit, completedDays: habit.completedDays.includes(date) ? habit.completedDays.filter((h) => h != date) : [...habit.completedDays, date]})}
-                  title={habit.completedDays.includes(date) ? 'Completed' : 'Incomplete'}
-                />
+                { date.toDateString() === today.toDateString() && 
+                  <Button 
+                    onPress={() => onComplete(habit, {...habit, completedDays: habit.completedDays.some((h) => h.toDateString() === date.toDateString()) ? habit.completedDays.filter((h) => h.toDateString() != date.toDateString()) : [...habit.completedDays, date]})}
+                    title={habit.completedDays.some((h) => h.toDateString() === date.toDateString()) ? 'Completed' : 'Incomplete'}
+                  />
+                }
+                { date.toDateString() != today.toDateString() && 
+                  <Text>
+                    {habit.completedDays.some((h) => h.toDateString() === date.toDateString()) ? 'Completed' : 'Incomplete'}
+                  </Text>
+                }
+
+                
                 <Text>
                     {habit.name}
                 </Text>
@@ -25,8 +35,8 @@ export default function HabitDisplaySimple({habits, date, onComplete} : Calendar
                     {habit.category}
                 </Text>
                 <Text>
-                    {habit.frequency}
-                </Text>
+                {habit.completedDays.map((v) => v.toDateString() + ' ')}
+            </Text>
                 <Text>
                     {habit.startDay.toDateString()}
                 </Text>

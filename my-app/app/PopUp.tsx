@@ -12,24 +12,18 @@ interface DataFormProps {
 
 export default function DataFormModal({ visible, onClose, onSubmit }: DataFormProps) {
   const [input, setInput] = useState('');
-  const frequencies:{[key: string]:Frequency} = {"Hourly": Frequency.Hourly, "Weekly": Frequency.Weekly, "Daily":Frequency.Daily, "Monthly":Frequency.Monthly};
-  const [selFreq, setFreq] = useState('Weekly');
-
-  const [date, setDate] = useState(new Date());
+  const weekDays:{[key:string]:number} = {'Sunday':0, 'Monday':1, 'Tuesday':2, 'Wednesday':3, 'Thursday':4, 'Friday':5, 'Saturday':6}
+  const [days, setDays] = useState<string[]>([]);
 
   const categories:{[key: string]:string} = {'Health': "Health", 'Career': "Career"};
   const [selCat, setCat] = useState('Health');
 
   const handleSubmit = () => {
-    onSubmit({name:input, frequency:frequencies[selFreq], startDay:date, completedDays:[], category: categories[selCat]});
+    //onSubmit({name:input, habitDays:days, startDay:new Date(), completedDays:[], category: categories[selCat]});
     setInput('');
+    setCat('Health')
+    setDays([])
     onClose();
-  };
-
-  const onDateChange = (event: any, selectedDate?: Date) => {
-    if (selectedDate) {
-      setDate(selectedDate);
-    }
   };
 
   return (
@@ -39,17 +33,9 @@ export default function DataFormModal({ visible, onClose, onSubmit }: DataFormPr
           <Text style={styles.title}>Enter Name</Text>
           <TextInput
             style={styles.input}
-            placeholder="Type here..."
+            placeholder="Habit Name"
             value={input}
             onChangeText={setInput}
-          />
-          <DropdownExample
-            title={'Frequency'}
-            items={frequencies}
-            selected={selFreq}
-            onChanged={(value, key) => {
-              setFreq(key);
-            }}
           />
           <DropdownExample
             title={'Category'}
@@ -59,15 +45,19 @@ export default function DataFormModal({ visible, onClose, onSubmit }: DataFormPr
               setCat(key);
             }}
           />
-          <DatePicker
-            modal
-            open={true}
-            date={date}
-            mode="date"
-            onConfirm={(selectedDate) => {
-              setDate(selectedDate)
-            }}
-          />
+          <View style={styles.buttonRow}>
+            { Object.keys(weekDays).map((day) => (
+              <Button
+                title={days.includes(day) ? day + ' x' : day}
+                onPress={() => {
+                  const newDays = days.includes(day) ? days.filter(d => d != day) : [...days, day]
+                  setDays(newDays)
+                }}
+              />
+            ))
+              
+            }
+          </View>
           <View style={styles.buttonRow}>
             <Button title="Cancel" onPress={onClose} />
             <Button title="Submit" onPress={handleSubmit} />
