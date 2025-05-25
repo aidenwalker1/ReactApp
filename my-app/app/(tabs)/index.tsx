@@ -34,9 +34,10 @@ export default function HomeScreen() {
   const [selectedDiet, setSelectedDiet] = useState<DietData | null>(user.selectedDiet)
 
   const getHabs = () => {
-    console.log(habits[0].habitDays)
     return habits.filter(h => h.habitDays.some(d => d.getDay() === today.getDay()))
   }
+
+  
 
   return (
     <View style={{flex:1}}>
@@ -52,8 +53,8 @@ export default function HomeScreen() {
           habits={getHabs()} 
           meals={selectedDiet ? selectedDiet.meals.filter(m => m.mealDays.some(d => d.getDay() === today.getDay())) : []}
           date={today}
-          onComplete={(old, hab) => {
-                dispatch(saveUser({...user, habits:habits.map((h) => h !== old ? h : hab)}))
+          onComplete={hab => {
+                dispatch(saveUser({...user, habits:habits.map((h) => h.id !== hab.id ? h : hab)}))
           }}
         />
       }
@@ -69,8 +70,8 @@ export default function HomeScreen() {
             habits={habits.filter(h => h.habitDays.some(d => d.getDay() === selectedDate.getDay()))} 
             meals={selectedDiet ? selectedDiet.meals.filter(m => m.mealDays.some(d => d.getDay() === selectedDate.getDay())) : []}
             date={selectedDate}
-            onComplete={(old, hab) => {
-                  dispatch(saveUser({...user, habits:habits.map((h) => h !== old ? h : hab)}))
+            onComplete={hab => {
+                  dispatch(saveUser({...user, habits:habits.map((h) => h.id !== hab.id ? h : hab)}))
             }}
           />
         </View>

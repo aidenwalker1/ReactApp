@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { Platform, StyleSheet, View, Text, Button, TouchableOpacity } from 'react-native';
+import { Platform, StyleSheet, View, Text, Button, TouchableOpacity, FlatList } from 'react-native';
 
 import {useEffect, useState} from 'react'
 import { ScrollView, TextInput } from 'react-native-gesture-handler';
@@ -86,17 +86,21 @@ export default function MealDisplayScreen({meal, updateMeals, removeMeal} : Meal
                 }
             </View>
 
-            { meal.food.map((item) => (
-            <View>
-                <AddFoodDisplay key={item.name+item.category} food={item} onEnded={(f) => {
-                    updateFood(item, f)
-                }}
-                removed={(food) => removeFood(food)}
-                namedAlready={(food) => meal.food.some((f) => f.name === food)}
-                />
-            </View>
-            ))
-            }
+            <FlatList
+                data={meal.food}
+                renderItem={(item) => (
+                     <AddFoodDisplay key={item.item.name} food={item.item} onEnded={(f) => {
+                            updateFood(item.item, f)
+                        }}
+                        removed={(food) => removeFood(food)}
+                        namedAlready={(food) => meal.food.some((f) => f.name === food)}
+                    />
+                )}
+                keyExtractor={item => item.name}
+                numColumns={2}
+            >
+
+            </FlatList>
             
             <TouchableOpacity
                 style={[styles.button, {backgroundColor:'blue'}]}

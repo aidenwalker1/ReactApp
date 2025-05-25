@@ -55,12 +55,8 @@ export default function DietScreen() {
     
     useEffect(() => {
       if (user) {
-        console.log('also here')
         setDiets(user.diets)
         setSelected(user.selectedDiet)
-        if (user.diets.length > 0) {
-          console.log(user.diets[0].meals.length)
-        }
       }
 
       loadCSV()
@@ -72,13 +68,13 @@ export default function DietScreen() {
     }
 
     const removeDiet = (diet:DietData) => {
-      dispatch(saveUser({...user, diets:diets.filter(d => d.id != diet.id)}))
+      const u = {...user, diets:diets.filter(d => d.id != diet.id), selectedDiet:diet.id==user.selectedDiet?.id ? null : user.selectedDiet}
+      dispatch(saveUser(u))
     }
 
     const editDiet = (newData:DietData) => {
-      console.log('here')
-      console.log(newData.meals.length)
-      dispatch(saveUser({...user, diets:diets.map(d => d.id != newData.id ? d : newData)}))
+      const u = {...user, diets:diets.map(d => d.id != newData.id ? d : newData), selectedDiet:newData.id==user.selectedDiet?.id ? newData : user.selectedDiet}
+      dispatch(saveUser(u))
     }
 
     const setSelectedDiet = (diet:DietData|null) => {
@@ -110,7 +106,7 @@ export default function DietScreen() {
               })}
             }
           >
-            <Text style={styles.button}>Add Diet</Text>
+            <Text style={styles.buttonText}>Add Diet</Text>
         </TouchableOpacity>
         </View>
 
