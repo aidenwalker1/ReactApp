@@ -79,9 +79,6 @@ export default function HabitDisplay({habit, onClose, onSubmit} : HabitDisplayPr
                 }
             </View>
             
-            <Text>
-                {habit.completedDays.length == 0 ? "No Completed Days" : habit.completedDays.map((date) => date.toDateString()).reduce((prev, cur) => prev + ", " + cur)}
-            </Text>
             <TouchableOpacity
               style={styles.button}
               onPress={() => onClose(habit)}

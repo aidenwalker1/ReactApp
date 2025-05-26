@@ -42,7 +42,7 @@ export default function HomeScreen() {
   return (
     <View style={{flex:1}}>
       { selectedDate == null && 
-        <WheelDisplay selectedDay={selectedDate} onSelect={(d) => {
+        <WheelDisplay meals={selectedDiet ? selectedDiet.meals : []} habits={habits}selectedDay={selectedDate} onSelect={(d) => {
           setSelectedDate(d)
         }}/>
       }

@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Pressable, View, Text, Dimensions, StyleSheet } from "react-native";
 import Svg, { Line } from "react-native-svg";
+import { HabitData, MealData } from "./DataInterfaces";
 
-export default function WheelDisplay({selectedDay, onSelect} :{selectedDay:Date|null, onSelect:(d:Date) => void}) {
+export default function WheelDisplay({meals, habits, selectedDay, onSelect} :{meals:MealData[], habits:HabitData[], selectedDay:Date|null, onSelect:(d:Date) => void}) {
     const { width, height } = Dimensions.get('window');
     const centerX = width / 2;
     const centerY = height / 2 - 200;
@@ -20,14 +21,29 @@ export default function WheelDisplay({selectedDay, onSelect} :{selectedDay:Date|
     });
     }
 
+    const today = new Date()
+
+    const checkLocation = (day:string) => {
+      const num = weekDays[day]
+      for (let i = 0; i < habits.length; i++) {
+        const habit = habits[i]
+        if (habit.habitDays.some(h => h.getDay() == num)) {
+          if (habit.completedDays.length == 0 || !habit.completedDays.some(h => h.getDay() == num && Math.abs(today.getDate() - h.getDate()) < 7)) {
+            return false
+          }
+        }
+      }
+
+
+      return true
+    }
+
     const [items, setItems] = useState(makeLocations(0))
 
     useEffect(() => {
       // Start a timer that updates count every second
       const interval = setInterval(() => {
         if (holding) {
-          const s = angleTime
-          //console.log('should be' + s.current)
           angleTime.current = (angleTime.current + 0.01) % 360
           setItems(makeLocations(angleTime.current))
         }
@@ -50,7 +66,7 @@ export default function WheelDisplay({selectedDay, onSelect} :{selectedDay:Date|
                         y1={pos.y+20}
                         x2={centerX+27.5}
                         y2={centerY}
-                        stroke="blue"
+                        stroke={checkLocation(Object.keys(weekDays).at((new Date().getDay() + i) % 7)!) ? 'green' : 'blue'}
                         strokeWidth="2"
                         />
                     
@@ -136,3 +152,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
 });
+
+
+/*
+      5
+    4   6
+      3   7
+*/
